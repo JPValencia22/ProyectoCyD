@@ -30,7 +30,7 @@ async def process_message(message):
             )
 
             # Guardar en MongoDB
-            security_key = email_data.get("body").split(":")[-1].strip().split()[0]
+            security_key = email_data.get("body").split("es:")[-1].strip().split()[0]
             collection.insert_one({
                 "email": email_data["recipient"],
                 "security_key": security_key
