@@ -1,3 +1,4 @@
+
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from utils.vcf_parser import VCFParser
@@ -6,14 +7,14 @@ from database.db_operations import VariantDBOperations
 from utils.progress_tracker import ProgressTracker
 
 def process_single_vcf_file(filename):
-    #Procesa un único archivo VCF y almacena sus datos en MongoDB.
+    """Process a single VCF file and store its data in MongoDB."""
     db_ops = VariantDBOperations()
     total_records = 0
     
     try:
         print(f"\nProcessing file: {filename}")
         
-        #Analizar el archivo VCF
+        # Parse VCF file
         records = VCFParser.parse_file(filename)
         
         if not records:
@@ -24,22 +25,25 @@ def process_single_vcf_file(filename):
         total_records += file_records
         print(f"\nFound {file_records} valid records in {filename}")
         
-       #Seguimiento del progreso de la configuración
+        # Setup progress tracking
         progress = ProgressTracker(file_records)
         
-        
-        # Convertir registros en objetos variantes
+        # Convert records to Variant objects
         print("Converting records to variants...")
         variants = []
         for record in records:
             variants.append(Variant(record))
             progress.update()
         
-        
-        # Insertar variantes en lotes
+        # Determine the collection name based on the header format
+        collection_name = 'variants'  # Default collection
+        if records[0]['#CHROM'].startswith('output_CS'):  # Check if it's a CS group
+            collection_name = 'cs_variants'  # Change to your desired collection name
+
+        # Insert variants in batches
         print("\nInserting variants into MongoDB...")
-        inserted_count = db_ops.insert_batch(variants)
-        print(f"Inserted {inserted_count} variants from {filename}")
+        inserted_count = db_ops.insert_batch(variants, collection_name)
+        print(f"Inserted {inserted_count} variants from {filename} into collection '{collection_name}'")
         
         return inserted_count
 
@@ -50,6 +54,7 @@ def process_single_vcf_file(filename):
         db_ops.close()
 
 def process_vcf_files(filenames):
+    """Process multiple VCF files in parallel and store in local MongoDB."""
     total_records = 0
     
     start_time = time.time()  # Start time measurement
@@ -74,4 +79,3 @@ def process_vcf_files(filenames):
     print(f"- Total processed files: {len(filenames)}")
     print(f"- Total records inserted: {total_records}")
     print(f"- Total time taken: {elapsed_time:.2f} seconds")  # Print elapsed time
-

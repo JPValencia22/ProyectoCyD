@@ -23,27 +23,33 @@ class VariantDBOperations:
         except Exception as e:
             print(f"Error creating indexes: {str(e)}")
 
-    def insert_batch(self, variants: List[Variant]) -> int:
-       # inserta un lote de variantes en la base de datos y devuelve el numero total de las insertadas satisfactoriamente
+    def insert_batch(self, variants: List[Variant], collection_name: str = None) -> int:
+        """
+        Insert a batch of variants into MongoDB
+        Returns the total number of successfully inserted variants
+        """
         total_inserted = 0
         current_batch = []
 
         try:
+            # Use the specified collection if provided, otherwise use the default
+            collection = self.client.db[collection_name] if collection_name else self.client.collection
+
             for variant in variants:
                 current_batch.append(variant)
                 
-                #se procesa el lote cuando se alcanza el tamaño del mismo
+                # Process batch when it reaches the batch size
                 if len(current_batch) >= self.BATCH_SIZE:
-                    inserted = self.client.insert_variants(current_batch)
-                    total_inserted += inserted
-                    current_batch = []  #limpiar el lote
-                    print(f"Inserted {inserted} variants...")
+                    inserted = collection.insert_many([v.to_dict() for v in current_batch])
+                    total_inserted += len(inserted.inserted_ids)
+                    current_batch = []  # Clear the batch
+                    print(f"Inserted {len(inserted.inserted_ids)} variants...")
 
-            # procesa las variantes que quedan
+            # Process any remaining variants
             if current_batch:
-                inserted = self.client.insert_variants(current_batch)
-                total_inserted += inserted
-                print(f"Inserted final {inserted} variants...")
+                inserted = collection.insert_many([v.to_dict() for v in current_batch])
+                total_inserted += len(inserted.inserted_ids)
+                print(f"Inserted final {len(inserted.inserted_ids)} variants...")
 
             return total_inserted
 
@@ -51,34 +57,6 @@ class VariantDBOperations:
             print(f"Error during batch insertion: {str(e)}")
             return total_inserted
 
-    def get_variant_count(self) -> int:
-        #obtiene el recuento total de variantes en la base de datos
-        try:
-            return self.client.collection.count_documents({})
-        except Exception as e:
-            print(f"Error getting variant count: {str(e)}")
-            return 0
-
-    def get_variants_for_display(self, skip: int = 0, limit: int = 100) -> List[Dict[str, Any]]:
-        #Recuperar variantes formateadas para su visualización en el frontend
-        try:
-            variants = self.client.collection.find({}).skip(skip).limit(limit)
-            return [Variant.get_display_columns(variant) for variant in variants]
-        except Exception as e:
-            print(f"Error retrieving variants: {str(e)}")
-            return []
-
-    def get_column_headers(self) -> List[str]:
-        #Obtener encabezados de columna para visualización frontend
-        try:
-            first_variant = self.client.collection.find_one()
-            if first_variant:
-                return Variant.get_display_columns(first_variant)
-            return []
-        except Exception as e:
-            print(f"Error getting column headers: {str(e)}")
-            return []
-
     def close(self):
-        #cerrar la conexión de la base de datos
+        """Close database connection"""
         self.client.close()
