@@ -3,137 +3,299 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tabla de Variantes</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <script>
-        function performClientSearch() {
-            const query = document.getElementById('searchInput').value.trim().toLowerCase();
-            const tableRows = document.querySelectorAll('#variantsTable tbody tr');
-
-            tableRows.forEach(row => {
-                const cells = Array.from(row.cells);
-                // Filtrar únicamente por Chromosome, Filter, Information y Format
-                const searchableCells = [cells[0], cells[6], cells[7], cells[8]]; 
-                const matches = searchableCells.some(cell => cell.textContent.toLowerCase().includes(query));
-                row.style.display = matches ? '' : 'none'; // Mostrar/Ocultar filas según la coincidencia
-            });
+    <title>Lista de Variantes Genéticas</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f7fa;
+            margin: 0;
+            padding: 20px;
         }
 
-        function sortTable(columnIndex, ascending = true) {
-            const table = document.getElementById('variantsTable');
-            const tbody = table.querySelector('tbody');
-            const rows = Array.from(tbody.rows);
-
-            rows.sort((a, b) => {
-                const cellA = a.cells[columnIndex].textContent.trim().toLowerCase();
-                const cellB = b.cells[columnIndex].textContent.trim().toLowerCase();
-
-                if (!isNaN(cellA) && !isNaN(cellB)) {
-                    return ascending ? cellA - cellB : cellB - cellA;
-                }
-
-                return ascending ? cellA.localeCompare(cellB) : cellB.localeCompare(cellA);
-            });
-
-            rows.forEach(row => tbody.appendChild(row));
+        h1 {
+            text-align: center;
+            color: #2c3e50;
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const searchButton = document.getElementById('searchButton');
-            searchButton.addEventListener('click', performClientSearch);
+        .search-bar {
+            text-align: center;
+            margin-bottom: 20px;
+        }
 
-            const sortButtons = document.querySelectorAll('.sort-button');
-            sortButtons.forEach(button => {
-                button.addEventListener('click', () => {
-                    const columnIndex = button.getAttribute('data-column');
-                    const ascending = button.getAttribute('data-ascending') === 'true';
-                    sortTable(columnIndex, ascending);
-                });
-            });
-        });
-    </script>
+        .search-bar input {
+            padding: 10px;
+            margin: 5px;
+            width: 200px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+
+        .search-bar button {
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            background-color: #2980b9;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+
+        .search-bar button:hover {
+            background-color: #3498db;
+        }
+
+        .table-container {
+            max-width: 100%;
+            overflow-x: auto;
+            margin-top: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1000px;
+        }
+
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        th {
+            background-color: #34495e;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        tr:hover {
+            background-color: #e3f2fd;
+        }
+
+        .pagination {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .pagination button {
+            padding: 10px 20px;
+            margin: 0 5px;
+            cursor: pointer;
+            background-color: #2980b9;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+
+        .pagination button.disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+        }
+
+        .pagination button:hover:not(.disabled) {
+            background-color: #3498db;
+        }
+
+        .page-info {
+            font-size: 16px;
+            margin-top: 10px;
+        }
+
+        .page-input-container {
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .page-input-container input {
+            width: 50px;
+            padding: 5px;
+            text-align: center;
+        }
+
+    </style>
 </head>
 <body>
-    <div class="container">
-        <h1 class="mt-5">Tabla de Variantes Genéticas</h1>
-        
-        <!-- Search Bar with Search Button -->
-        <div class="mb-3 input-group">
-            <input type="text" id="searchInput" class="form-control" placeholder="Buscar variantes...">
-            <div class="input-group-append">
-                <button id="searchButton" class="btn btn-primary">Buscar</button>
-            </div>
-        </div>
-        
-        <!-- Sort Buttons -->
-        <div class="mb-3">
-            <button class="btn btn-secondary sort-button" data-column="0" data-ascending="true">Ordenar Chromosome (Asc)</button>
-            <button class="btn btn-secondary sort-button" data-column="0" data-ascending="false">Ordenar Chromosome (Desc)</button>
-            <button class="btn btn-secondary sort-button" data-column="6" data-ascending="true">Ordenar Filter (Asc)</button>
-            <button class="btn btn-secondary sort-button" data-column="6" data-ascending="false">Ordenar Filter (Desc)</button>
-            <button class="btn btn-secondary sort-button" data-column="7" data-ascending="true">Ordenar Information (Asc)</button>
-            <button class="btn btn-secondary sort-button" data-column="7" data-ascending="false">Ordenar Information (Desc)</button>
-            <button class="btn btn-secondary sort-button" data-column="8" data-ascending="true">Ordenar Format (Asc)</button>
-            <button class="btn btn-secondary sort-button" data-column="8" data-ascending="false">Ordenar Format (Desc)</button>
-        </div>
 
-        <!-- Table Container with fixed width and scroll -->
-        <div style="max-width: 800px; overflow-x: auto;">
-            <table id="variantsTable" class="table table-striped mt-3" style="width: 100%;">
-                <thead>
-                    <tr>
-                        <th>Chromosome</th>
-                        <th>Position</th>
-                        <th>Identifier</th>
-                        <th>Reference</th>
-                        <th>Alternative</th>
-                        <th>Quality</th>
-                        <th>Filter</th>
-                        <th>Information</th>
-                        <th>Format</th>
-                        <!-- Agregar columnas de muestras dinámicamente -->
-                        {% for sample in variants[0].samples.keys() %}
-                        <th>{{ sample }}</th>
-                        {% endfor %}
-                    </tr>
-                </thead>
-                <tbody>
-                    {% if variants %}
-                        {% for variant in variants %}
-                        <tr>
-                            <td>{{ variant.chromosome }}</td>
-                            <td>{{ variant.position }}</td>
-                            <td>{{ variant.variant_id }}</td>
-                            <td>{{ variant.reference }}</td>
-                            <td>{{ variant.alternative }}</td>
-                            <td>{{ variant.quality }}</td>
-                            <td>{{ variant.filter }}</td>
-                            <td>{{ variant.info }}</td>
-                            <td>{{ variant.format }}</td>
-                            {% for sample in variant.samples.values() %}
-                            <td>{{ sample }}</td>
-                            {% endfor %}
-                        </tr>
-                        {% endfor %}
-                    {% else %}
-                        <tr>
-                            <td colspan="9">No variants found.</td>
-                        </tr>
-                    {% endif %}
-                </tbody>
-            </table>
-        </div>
+    <h1>Lista de Variantes Genéticas</h1>
 
-        <div class="pagination">
-            <a href="{{ url_for('get_all_variants', skip=skip - limit, limit=limit) }}" 
-               class="btn btn-primary {% if skip == 0 %}disabled{% endif %}">
-                Anterior
-            </a>
-            <a href="{{ url_for('get_all_variants', skip=skip + limit, limit=limit) }}" 
-               class="btn btn-primary">
-                Siguiente
-            </a>
-        </div>
+    <!-- Barra de búsqueda -->
+    <div class="search-bar">
+        <input type="text" id="chrom-search" placeholder="Buscar por Chrom">
+        <input type="text" id="filter-search" placeholder="Buscar por Filter">
+        <input type="text" id="info-search" placeholder="Buscar por Info">
+        <input type="text" id="format-search" placeholder="Buscar por Format">
+        <button onclick="searchVariants()">Buscar</button>
     </div>
+
+    <!-- Contenedor de la tabla con desplazamiento horizontal -->
+    <div class="table-container">
+        <table id="variants-table">
+            <thead>
+                <tr>
+                    <th>Chrom</th>
+                    <th>Pos</th>
+                    <th>Id</th>
+                    <th>Ref</th>
+                    <th>Alt</th>
+                    <th>Qual</th>
+                    <th>Filter</th>
+                    <th>Info</th>
+                    <th>Format</th>
+                    <!-- Las columnas de Outputs se llenarán dinámicamente -->
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Los datos se llenarán con JavaScript -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Paginación -->
+    <div class="pagination">
+        <button id="prev-btn" class="disabled" onclick="loadPage(currentPage - 1)">Anterior</button>
+        <button id="next-btn" onclick="loadPage(currentPage + 1)">Siguiente</button>
+    </div>
+
+    <!-- Información de la página -->
+    <div id="page-info" class="page-info">Página 1 de 1</div>
+
+    <!-- Selector de página -->
+    <div class="page-input-container">
+        <label for="page-input">Ir a página: </label>
+        <input type="number" id="page-input" min="1" />
+        <button onclick="goToPage()">Ir</button>
+    </div>
+
+    <script>
+        let currentPage = 1;
+        const perPage = 100;
+        let totalPages = 1;
+        let searchParams = {};
+
+        // Función para cargar los datos de la API
+        function loadPage(page) {
+            if (page < 1 || page > totalPages) return; // Validar la página
+
+            // Construir la URL con los parámetros de paginación y búsqueda
+            let url = `http://127.0.0.1:5000/all_variants?page=${page}&per_page=${perPage}`;
+            Object.keys(searchParams).forEach(key => {
+                url += `&${key}=${encodeURIComponent(searchParams[key])}`;
+            });
+
+            // Hacer la solicitud fetch al backend
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    const variants = data.variants;
+                    const total = data.total;
+
+                    // Calcular el total de páginas
+                    totalPages = Math.ceil(total / perPage);
+
+                    // Obtener las claves de Outputs
+                    const allOutputKeys = new Set();
+
+                    variants.forEach(variant => {
+                        const outputs = variant.Outputs || {};
+                        const outputKeys = Object.keys(outputs);
+                        outputKeys.forEach(key => allOutputKeys.add(key));
+                    });
+
+                    // Crear las cabeceras dinámicas para Outputs
+                    const tableHeader = document.querySelector("#variants-table thead tr");
+                    allOutputKeys.forEach(key => {
+                        const th = document.createElement("th");
+                        th.innerText = key;
+                        tableHeader.appendChild(th);
+                    });
+
+                    // Limpiar el cuerpo de la tabla
+                    const tableBody = document.querySelector("#variants-table tbody");
+                    tableBody.innerHTML = "";
+
+                    // Recorrer las variantes y llenar la tabla
+                    variants.forEach(variant => {
+                        const row = document.createElement("tr");
+
+                        // Mostrar datos estándar
+                        row.innerHTML = `
+                            <td>${variant.Chrom}</td>
+                            <td>${variant.Pos}</td>
+                            <td>${variant.Id}</td>
+                            <td>${variant.Ref}</td>
+                            <td>${variant.Alt}</td>
+                            <td>${variant.Qual}</td>
+                            <td>${variant.Filter}</td>
+                            <td>${variant.Info}</td>
+                            <td>${variant.Format}</td>
+                        `;
+
+                        // Obtener los datos de Outputs y reemplazar 'ch' por 'cs' si es necesario
+                        const outputs = variant.Outputs || {};
+                        allOutputKeys.forEach(key => {
+                            const outputValue = outputs[key] || ''; // Usamos valor de 'key' o vacío
+                            const td = document.createElement("td");
+                            td.innerText = outputValue;
+                            row.appendChild(td);
+                        });
+
+                        tableBody.appendChild(row);
+                    });
+
+                    // Actualizar la información de la página
+                    currentPage = page;
+                    document.getElementById("page-info").innerText = `Página ${currentPage} de ${totalPages}`;
+
+                    // Habilitar/Deshabilitar botones de paginación
+                    document.getElementById("prev-btn").classList.toggle("disabled", currentPage <= 1);
+                    document.getElementById("next-btn").classList.toggle("disabled", currentPage >= totalPages);
+                })
+                .catch(error => console.error('Error al cargar los datos:', error));
+        }
+
+        // Función para manejar la búsqueda
+        function searchVariants() {
+            searchParams = {};
+
+            const chrom = document.getElementById("chrom-search").value.trim();
+            const filter = document.getElementById("filter-search").value.trim();
+            const info = document.getElementById("info-search").value.trim();
+            const format = document.getElementById("format-search").value.trim();
+
+            if (chrom) searchParams['Chrom'] = chrom;
+            if (filter) searchParams['Filter'] = filter;
+            if (info) searchParams['Info'] = info;
+            if (format) searchParams['Format'] = format;
+
+            // Volver a cargar la página 1 con los nuevos parámetros de búsqueda
+            currentPage = 1;
+            loadPage(currentPage);
+        }
+
+        // Función para ir a la página seleccionada
+        function goToPage() {
+            const pageInput = document.getElementById("page-input").value;
+            const page = parseInt(pageInput);
+
+            if (page >= 1 && page <= totalPages) {
+                loadPage(page);
+            } else {
+                alert(`Por favor, ingresa un número de página válido entre 1 y ${totalPages}.`);
+            }
+        }
+
+        // Cargar la primera página al inicio
+        loadPage(currentPage);
+    </script>
+
 </body>
 </html>

@@ -1,24 +1,29 @@
 from typing import List, Dict, Any
-from pymongo import ASCENDING
+from pymongo import ASCENDING, TEXT, MongoClient
 from database.mongo_client import MongoDBClient
 from models.variant import Variant
 
 class VariantDBOperations:
-    BATCH_SIZE = 1000  #procesa los registros en lotes de 1000
+    BATCH_SIZE = 1000  # procesa los registros en lotes de 1000
 
     def __init__(self):
-        self.client = MongoDBClient()
-        self.client.connect()
+        self.client = MongoClient('mongodb://localhost:27017/')
+        self.db = self.client['vcf_database']
+        self.collection = self.db['variants']
         self._create_indexes()
 
     def _create_indexes(self):
-        #creacion de indices para mejorar el rendimiento en las consultas 
+        # Creación de índices para mejorar el rendimiento en las consultas
         try:
-            self.client.collection.create_index([
-                ("chromosome", ASCENDING),
-                ("position", ASCENDING)
+            self.collection.create_index([('chromosome', ASCENDING)])
+            self.collection.create_index([('filter', ASCENDING)])
+            self.collection.create_index([('info', TEXT)])
+            self.collection.create_index([('format', ASCENDING)])
+            self.collection.create_index([
+                ('chromosome', ASCENDING),
+                ('position', ASCENDING)
             ])
-            self.client.collection.create_index("variant_id")
+            self.collection.create_index('variant_id')
             print("Database indexes created successfully")
         except Exception as e:
             print(f"Error creating indexes: {str(e)}")
@@ -33,11 +38,10 @@ class VariantDBOperations:
 
         try:
             # Use the specified collection if provided, otherwise use the default
-            collection = self.client.db[collection_name] if collection_name else self.client.collection
+            collection = self.db[collection_name] if collection_name else self.collection
 
             for variant in variants:
                 current_batch.append(variant)
-                
                 # Process batch when it reaches the batch size
                 if len(current_batch) >= self.BATCH_SIZE:
                     inserted = collection.insert_many([v.to_dict() for v in current_batch])
@@ -56,6 +60,31 @@ class VariantDBOperations:
         except Exception as e:
             print(f"Error during batch insertion: {str(e)}")
             return total_inserted
+
+    def get_paginated_variants(self, page, per_page):
+        skip = (page - 1) * per_page
+        cursor = self.collection.find().skip(skip).limit(per_page)
+        variants = list(cursor)
+
+        # Transformar los documentos para ser serializables en JSON
+        result = [
+            {
+                'Chrom': variant.get('chromosome'),
+                'Pos': variant.get('position'),
+                'Id': variant.get('id'),
+                'Ref': variant.get('reference'),
+                'Alt': variant.get('alternative'),
+                'Qual': variant.get('quality'),
+                'Filter': variant.get('filter'),
+                'Info': variant.get('info'),
+                'Format': variant.get('format'),
+                'Outputs': variant.get('samples', {})
+            }
+            for variant in variants
+        ]
+
+        total = self.collection.count_documents({})
+        return result, total
 
     def close(self):
         """Close database connection"""
