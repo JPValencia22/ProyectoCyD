@@ -1,5 +1,5 @@
 #configuración Conexión con MongoDB
-configuracionMongo = {
+MONGODB_CONFIG = {
     'host': 'localhost',
     'port': 27017,
     'database': 'vcf_database',
