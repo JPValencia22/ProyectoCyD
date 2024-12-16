@@ -69,6 +69,12 @@ def upload_file():
     # Process the VCF files
     process_vcf_files(vcf_files)  # Call your processing function
 
+    try:
+        shutil.rmtree('uploads')  # Remove the uploads directory and all its contents
+        print("Temporary upload folder removed successfully.")
+    except Exception as e:
+        print(f"Error removing temporary upload folder: {str(e)}")
+
     return jsonify({'message': 'Files processed successfully'}), 200
 
 

@@ -6,58 +6,50 @@
     <title>Tabla de Variantes</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <script>
-        async function performSearch() {
-            const query = document.getElementById('searchInput').value.trim();
-        
-            if (!query) {
-                updateTable([]); // Limpiar la tabla si no hay consulta
-                return;
-            }
-        
-            try {
-                const response = await fetch(`/search_variants?query=${encodeURIComponent(query)}`);
-        
-                if (!response.ok) throw new Error('Error al buscar las variantes');
-        
-                const data = await response.json();
-                updateTable(data.variants);
-            } catch (error) {
-                console.error('Error:', error);
-                alert("Ocurrió un error al buscar los datos.");
-            }
-        }
-        
-        function updateTable(variants) {
-            const tableBody = document.querySelector('#variantsTable tbody');
-            tableBody.innerHTML = ''; // Limpia la tabla actual
-        
-            if (variants.length === 0) {
-                const row = tableBody.insertRow();
-                const cell = row.insertCell(0);
-                cell.colSpan = 9; // Ajusta al número de columnas
-                cell.textContent = 'No variants found.';
-                return;
-            }
-        
-            // Renderizar resultados
-            variants.forEach(variant => {
-                const row = tableBody.insertRow();
-                row.insertCell(0).textContent = variant.chromosome || '-';
-                row.insertCell(1).textContent = variant.position || '-';
-                row.insertCell(2).textContent = variant.variant_id || '-';
-                row.insertCell(3).textContent = variant.reference || '-';
-                row.insertCell(4).textContent = variant.alternative || '-';
-                row.insertCell(5).textContent = variant.quality || '-';
-                row.insertCell(6).textContent = variant.filter || '-';
-                row.insertCell(7).textContent = variant.info || '-';
-                row.insertCell(8).textContent = variant.format || '-';
+        function performClientSearch() {
+            const query = document.getElementById('searchInput').value.trim().toLowerCase();
+            const tableRows = document.querySelectorAll('#variantsTable tbody tr');
+
+            tableRows.forEach(row => {
+                const cells = Array.from(row.cells);
+                // Filtrar únicamente por Chromosome, Filter, Information y Format
+                const searchableCells = [cells[0], cells[6], cells[7], cells[8]]; 
+                const matches = searchableCells.some(cell => cell.textContent.toLowerCase().includes(query));
+                row.style.display = matches ? '' : 'none'; // Mostrar/Ocultar filas según la coincidencia
             });
         }
 
-        // Agregar un evento de entrada al campo de búsqueda
+        function sortTable(columnIndex, ascending = true) {
+            const table = document.getElementById('variantsTable');
+            const tbody = table.querySelector('tbody');
+            const rows = Array.from(tbody.rows);
+
+            rows.sort((a, b) => {
+                const cellA = a.cells[columnIndex].textContent.trim().toLowerCase();
+                const cellB = b.cells[columnIndex].textContent.trim().toLowerCase();
+
+                if (!isNaN(cellA) && !isNaN(cellB)) {
+                    return ascending ? cellA - cellB : cellB - cellA;
+                }
+
+                return ascending ? cellA.localeCompare(cellB) : cellB.localeCompare(cellA);
+            });
+
+            rows.forEach(row => tbody.appendChild(row));
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
-            const searchInput = document.getElementById('searchInput');
-            searchInput.addEventListener('input', performSearch);
+            const searchButton = document.getElementById('searchButton');
+            searchButton.addEventListener('click', performClientSearch);
+
+            const sortButtons = document.querySelectorAll('.sort-button');
+            sortButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const columnIndex = button.getAttribute('data-column');
+                    const ascending = button.getAttribute('data-ascending') === 'true';
+                    sortTable(columnIndex, ascending);
+                });
+            });
         });
     </script>
 </head>
@@ -65,11 +57,26 @@
     <div class="container">
         <h1 class="mt-5">Tabla de Variantes Genéticas</h1>
         
-        <!-- Search Bar -->
-        <div class="mb-3">
+        <!-- Search Bar with Search Button -->
+        <div class="mb-3 input-group">
             <input type="text" id="searchInput" class="form-control" placeholder="Buscar variantes...">
+            <div class="input-group-append">
+                <button id="searchButton" class="btn btn-primary">Buscar</button>
+            </div>
         </div>
         
+        <!-- Sort Buttons -->
+        <div class="mb-3">
+            <button class="btn btn-secondary sort-button" data-column="0" data-ascending="true">Ordenar Chromosome (Asc)</button>
+            <button class="btn btn-secondary sort-button" data-column="0" data-ascending="false">Ordenar Chromosome (Desc)</button>
+            <button class="btn btn-secondary sort-button" data-column="6" data-ascending="true">Ordenar Filter (Asc)</button>
+            <button class="btn btn-secondary sort-button" data-column="6" data-ascending="false">Ordenar Filter (Desc)</button>
+            <button class="btn btn-secondary sort-button" data-column="7" data-ascending="true">Ordenar Information (Asc)</button>
+            <button class="btn btn-secondary sort-button" data-column="7" data-ascending="false">Ordenar Information (Desc)</button>
+            <button class="btn btn-secondary sort-button" data-column="8" data-ascending="true">Ordenar Format (Asc)</button>
+            <button class="btn btn-secondary sort-button" data-column="8" data-ascending="false">Ordenar Format (Desc)</button>
+        </div>
+
         <!-- Table Container with fixed width and scroll -->
         <div style="max-width: 800px; overflow-x: auto;">
             <table id="variantsTable" class="table table-striped mt-3" style="width: 100%;">
@@ -127,56 +134,6 @@
                 Siguiente
             </a>
         </div>
-        <script>
-            async function performSearch() {
-                const query = document.getElementById('searchInput').value.trim();
-        
-                if (!query) {
-                    alert("Por favor ingresa un término de búsqueda.");
-                    return;
-                }
-        
-                try {
-                    const response = await fetch(`/search_variants?query=${encodeURIComponent(query)}`);
-        
-                    if (!response.ok) throw new Error('Error al buscar las variantes');
-        
-                    const data = await response.json();
-                    updateTable(data.variants);
-                } catch (error) {
-                    console.error('Error:', error);
-                    alert("Ocurrió un error al buscar los datos.");
-                }
-            }
-        
-            function updateTable(variants) {
-                const tableBody = document.querySelector('#variantsTable tbody');
-                tableBody.innerHTML = ''; // Limpia la tabla actual
-        
-                if (variants.length === 0) {
-                    const row = tableBody.insertRow();
-                    const cell = row.insertCell(0);
-                    cell.colSpan = 9; // Ajusta al número de columnas
-                    cell.textContent = 'No variants found.';
-                    return;
-                }
-        
-                // Renderizar resultados
-                variants.forEach(variant => {
-                    const row = tableBody.insertRow();
-                    row.insertCell(0).textContent = variant.chromosome || '-';
-                    row.insertCell(1).textContent = variant.position || '-';
-                    row.insertCell(2).textContent = variant.variant_id || '-';
-                    row.insertCell(3).textContent = variant.reference || '-';
-                    row.insertCell(4).textContent = variant.alternative || '-';
-                    row.insertCell(5).textContent = variant.quality || '-';
-                    row.insertCell(6).textContent = variant.filter || '-';
-                    row.insertCell(7).textContent = variant.info || '-';
-                    row.insertCell(8).textContent = variant.format || '-';
-                });
-            }
-        </script>
-        
     </div>
 </body>
 </html>
