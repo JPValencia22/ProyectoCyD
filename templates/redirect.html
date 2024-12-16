@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pantalla de Inicio de Sesión</title>
+    <title>Pantalla de Registro</title>
     <style>
         /* Estilos generales */
         * {
@@ -105,7 +105,7 @@
     </style>
     <script>
         function showAlert() {
-            alert("Buscando Usuario.");
+            alert("Bienvenido a la busqueda de variantes genéticas");
         }
     </script>
 </head>
@@ -113,20 +113,10 @@
     <div class="background"></div> <!-- Fondo decorativo -->
     <div class="container">
         <h1>WineFactory</h1>
-        <form id="loginForm" method="POST" action="/login" onsubmit="showAlert()">
-            <div class="input-group">
-                <input type="email" name="email" placeholder="EMAIL ADDRESS" required>
-            </div>
-            <div class="input-group">
-                <input type="password" name="password" placeholder="PASSWORD" required>
-            </div>
-            <button type="submit" class="btn">LOGIN</button>
+        <form id="variantsForm" action="/all_variants" onsubmit="showAlert()">
+            <button type="submit" class="btn">BUSCAR EN ARCHIVO</button>
         </form>
-        {% if error %}
-        <script>
-            alert("Email o contraseña incorrectos");
-        </script>
-        {% endif %}
+       
     </div>
 </body>
 </html>
