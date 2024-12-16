@@ -4,6 +4,7 @@ import shutil
 from bson import ObjectId
 from flask import Flask, request, jsonify
 import os
+from app.login.login import search_user
 from config.db_config import MONGODB_CONFIG
 from procesarData import process_vcf_files  # Import your processing function
 from database.db_operations import VariantDBOperations
@@ -11,10 +12,11 @@ from pymongo import MongoClient
 from motor.motor_asyncio import AsyncIOMotorClient
 import asyncio
 import nest_asyncio
-nest_asyncio.apply()
 from flask import render_template
 import logging
 import subprocess
+
+nest_asyncio.apply()
 
 app = Flask(__name__)
 
@@ -52,8 +54,30 @@ def register():
         except subprocess.CalledProcessError as e:
             return f"Error al ejecutar el script: {e}", 500
 
-@app.route('/login', methods=['GET'])
+@app.route('/show_login', methods=['GET'])
 def login_page():
+    return render_template('login.html')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+        # Guardar el email y la contraseña en variables de entorno temporales
+        os.environ['RECIPIENT_EMAIL'] = email
+        os.environ['RECIPIENT_PASSWORD'] = password
+        
+        # Ejecutar la función asíncrona search_user
+        user = asyncio.run(search_user())
+        
+        try:
+            if user == "Usuario encontrado":
+                return render_template('redirect.html')
+            else:
+                return render_template('login.html', error=True)
+        except Exception as e:
+            return f"Error al ejecutar el script: {e}", 500
+
     return render_template('login.html')
 
 @app.route('/upload', methods=['POST'])
