@@ -41,6 +41,10 @@ def register():
     # Aquí puedes agregar la lógica para registrar al usuario, como guardar en la base de datos
     return jsonify({"message": "User  registered successfully!"}), 201
 
+@app.route('/login', methods=['GET'])
+def login_page():
+    return render_template('login.html')
+
 @app.route('/upload', methods=['POST'])
 def upload_file():
     """Endpoint to process uploaded VCF files."""
