@@ -1,12 +1,45 @@
+import asyncio
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from bson import ObjectId
 from flask import Flask, request, jsonify
 import os
+from config.db_config import MONGODB_CONFIG
 from procesarData import process_vcf_files  # Import your processing function
-
+from database.db_operations import VariantDBOperations
+from pymongo import MongoClient
+from motor.motor_asyncio import AsyncIOMotorClient
+import asyncio
+import nest_asyncio
+nest_asyncio.apply()
+from flask import render_template
+import logging
 app = Flask(__name__)
+
+# Set up logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+
 
 @app.route('/')
 def home():
-    return jsonify({"message": "Welcome to the VCF Upload API!"})
+    return render_template('home.html')
+
+
+@app.route('/upload', methods=['GET'])
+def upload_page():
+    return render_template('upload.html')
+
+@app.route('/show_register', methods=['GET'])
+def show_register():
+    return render_template('register.html')
+
+@app.route('/register', methods=['POST'])
+def register():
+    email = request.form.get('email')   
+    password = request.form.get('password')
+
+    # Aquí puedes agregar la lógica para registrar al usuario, como guardar en la base de datos
+    return jsonify({"message": "User  registered successfully!"}), 201
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
