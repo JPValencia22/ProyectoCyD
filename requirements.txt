@@ -1,3 +1,17 @@
+aiofiles==24.1.0
+asgiref==3.8.1
+blinker==1.9.0
+click==8.1.7
+colorama==0.4.6
+dnspython==2.7.0
+Flask==3.1.0
+itsdangerous==2.2.0
+Jinja2==3.1.4
+MarkupSafe==3.0.2
+motor==3.6.0
+nest-asyncio==1.6.0
+pymongo==4.9.2
+Werkzeug==3.1.3
 aio-pika==9.5.3
 aiormq==6.8.1
 annotated-types==0.7.0

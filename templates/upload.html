@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cargar Archivo VCF</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script>
+        async function uploadFile(event) {
+            event.preventDefault(); // Evitar el comportamiento por defecto del formulario
+            const fileInput = document.getElementById('fileInput');
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error('Error al subir el archivo');
+                }
+
+                alert('Archivo subido exitosamente');
+                // Aquí puedes agregar lógica para actualizar la tabla si es necesario
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Ocurrió un error al subir el archivo.');
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1 class="mt-5">Cargar Archivo VCF</h1>
+        
+        <!-- Botón de carga de archivo -->
+        <form id="uploadForm" onsubmit="uploadFile(event)">
+            <div class="mb-3">
+                <input type="file" id="fileInput" class="form-control" accept=".vcf" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Cargar Archivo VCF</button>
+        </form>
+
+        <!-- Tabla de variantes vacía -->
+        <div style="max-width: 800px; overflow-x: auto;" class="mt-4">
+            <table id="variantsTable" class="table table-striped mt-3" style="width: 100%;">
+                <thead>
+                    <tr>
+                        <th>Chromosome</th>
+                        <th>Position</th>
+                        <th>Identifier</th>
+                        <th>Reference</th>
+                        <th>Alternative</th>
+                        <th>Quality</th>
+                        <th>Filter</th>
+                        <th>Information</th>
+                        <th>Format</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td colspan="9">No variants found.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

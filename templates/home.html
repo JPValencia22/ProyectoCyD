@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home Page</title>
+    <style>
+        /* Reset general */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        /* Fondo principal */
+        body {
+            background-color: #000; /* Fondo negro */
+            color: #FFD700; /* Color amarillo */
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        /* Contenedor principal */
+        .container {
+            position: relative;
+            width: 100%;
+            max-width: 1200px;
+            height: 100%;
+            padding: 20px;
+        }
+
+        /* Logo */
+        .logo {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #fff;
+            font-weight: bold;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        /* Navegación derecha */
+        .nav {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            color: #fff;
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav a {
+            text-decoration: none;
+            color: #fff;
+            font-size: 14px;
+            text-transform: uppercase;
+        }
+
+        .nav a:hover {
+            color: #FFD700; /* Amarillo al pasar el cursor */
+        }
+
+        /* Texto central */
+        .hero-text {
+            font-size: 150px;
+            font-weight: bold;
+            text-transform: lowercase;
+            color: #FFD700;
+        }
+
+        /* Mensaje de bienvenida */
+        #welcomeMessage {
+            font-size: 24px;
+            margin-top: 20px;
+            color: #FFD700;
+        }
+
+        /* Menú lateral */
+        .side-menu {
+            position: absolute;
+            right: 20px;
+            bottom: 50%;
+            transform: translateY(50%);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .side-menu a {
+            writing-mode: vertical-rl;
+            text-decoration: none;
+            color: #fff;
+            font-size: 14px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .side-menu a.active {
+            color: #FFD700; /* Amarillo para la página activa */
+            font-weight: bold;
+        }
+
+        /* Botones de Log In y Sign Up */
+        .buttons {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+        }
+
+        .buttons a {
+            text-decoration: none;
+            color: #000;
+            background-color: #FFD700;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-weight: bold;
+            text-transform: uppercase;
+            transition: background 0.3s ease;
+        }
+
+        .buttons a:hover {
+            background-color: #fff;
+            color: #000;
+        }
+    </style>
+</head>
+<body>
+    <!-- Contenedor principal -->
+    <div class="container">
+
+        <!-- Texto central -->
+        <div class="hero-text">hello.</div>
+
+        <!-- Mensaje de bienvenida -->
+        <div id="welcomeMessage">Bienvenido a The Wine Factory!</div>
+
+    
+
+    
+
+        <!-- Menú lateral -->
+        <div class="side-menu">
+            <a href="/show_register" class="active">Registro</a>
+            <a href="/login">Iniciar Sesión</a>
+            <a href="#">Servicios</a>
+            <a href="#">Contacto</a>
+        </div>
+
+     
+    </div>
+</body>
+</html>

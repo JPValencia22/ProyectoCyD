@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tabla de Variantes</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script>
+        async function performSearch() {
+            const query = document.getElementById('searchInput').value.trim();
+        
+            if (!query) {
+                updateTable([]); // Limpiar la tabla si no hay consulta
+                return;
+            }
+        
+            try {
+                const response = await fetch(`/search_variants?query=${encodeURIComponent(query)}`);
+        
+                if (!response.ok) throw new Error('Error al buscar las variantes');
+        
+                const data = await response.json();
+                updateTable(data.variants);
+            } catch (error) {
+                console.error('Error:', error);
+                alert("Ocurrió un error al buscar los datos.");
+            }
+        }
+        
+        function updateTable(variants) {
+            const tableBody = document.querySelector('#variantsTable tbody');
+            tableBody.innerHTML = ''; // Limpia la tabla actual
+        
+            if (variants.length === 0) {
+                const row = tableBody.insertRow();
+                const cell = row.insertCell(0);
+                cell.colSpan = 9; // Ajusta al número de columnas
+                cell.textContent = 'No variants found.';
+                return;
+            }
+        
+            // Renderizar resultados
+            variants.forEach(variant => {
+                const row = tableBody.insertRow();
+                row.insertCell(0).textContent = variant.chromosome || '-';
+                row.insertCell(1).textContent = variant.position || '-';
+                row.insertCell(2).textContent = variant.variant_id || '-';
+                row.insertCell(3).textContent = variant.reference || '-';
+                row.insertCell(4).textContent = variant.alternative || '-';
+                row.insertCell(5).textContent = variant.quality || '-';
+                row.insertCell(6).textContent = variant.filter || '-';
+                row.insertCell(7).textContent = variant.info || '-';
+                row.insertCell(8).textContent = variant.format || '-';
+            });
+        }
+
+        // Agregar un evento de entrada al campo de búsqueda
+        document.addEventListener('DOMContentLoaded', () => {
+            const searchInput = document.getElementById('searchInput');
+            searchInput.addEventListener('input', performSearch);
+        });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1 class="mt-5">Tabla de Variantes Genéticas</h1>
+        
+        <!-- Search Bar -->
+        <div class="mb-3">
+            <input type="text" id="searchInput" class="form-control" placeholder="Buscar variantes...">
+        </div>
+        
+        <!-- Table Container with fixed width and scroll -->
+        <div style="max-width: 800px; overflow-x: auto;">
+            <table id="variantsTable" class="table table-striped mt-3" style="width: 100%;">
+                <thead>
+                    <tr>
+                        <th>Chromosome</th>
+                        <th>Position</th>
+                        <th>Identifier</th>
+                        <th>Reference</th>
+                        <th>Alternative</th>
+                        <th>Quality</th>
+                        <th>Filter</th>
+                        <th>Information</th>
+                        <th>Format</th>
+                        <!-- Agregar columnas de muestras dinámicamente -->
+                        {% for sample in variants[0].samples.keys() %}
+                        <th>{{ sample }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if variants %}
+                        {% for variant in variants %}
+                        <tr>
+                            <td>{{ variant.chromosome }}</td>
+                            <td>{{ variant.position }}</td>
+                            <td>{{ variant.variant_id }}</td>
+                            <td>{{ variant.reference }}</td>
+                            <td>{{ variant.alternative }}</td>
+                            <td>{{ variant.quality }}</td>
+                            <td>{{ variant.filter }}</td>
+                            <td>{{ variant.info }}</td>
+                            <td>{{ variant.format }}</td>
+                            {% for sample in variant.samples.values() %}
+                            <td>{{ sample }}</td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="9">No variants found.</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pagination">
+            <a href="{{ url_for('get_all_variants', skip=skip - limit, limit=limit) }}" 
+               class="btn btn-primary {% if skip == 0 %}disabled{% endif %}">
+                Anterior
+            </a>
+            <a href="{{ url_for('get_all_variants', skip=skip + limit, limit=limit) }}" 
+               class="btn btn-primary">
+                Siguiente
+            </a>
+        </div>
+        <script>
+            async function performSearch() {
+                const query = document.getElementById('searchInput').value.trim();
+        
+                if (!query) {
+                    alert("Por favor ingresa un término de búsqueda.");
+                    return;
+                }
+        
+                try {
+                    const response = await fetch(`/search_variants?query=${encodeURIComponent(query)}`);
+        
+                    if (!response.ok) throw new Error('Error al buscar las variantes');
+        
+                    const data = await response.json();
+                    updateTable(data.variants);
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert("Ocurrió un error al buscar los datos.");
+                }
+            }
+        
+            function updateTable(variants) {
+                const tableBody = document.querySelector('#variantsTable tbody');
+                tableBody.innerHTML = ''; // Limpia la tabla actual
+        
+                if (variants.length === 0) {
+                    const row = tableBody.insertRow();
+                    const cell = row.insertCell(0);
+                    cell.colSpan = 9; // Ajusta al número de columnas
+                    cell.textContent = 'No variants found.';
+                    return;
+                }
+        
+                // Renderizar resultados
+                variants.forEach(variant => {
+                    const row = tableBody.insertRow();
+                    row.insertCell(0).textContent = variant.chromosome || '-';
+                    row.insertCell(1).textContent = variant.position || '-';
+                    row.insertCell(2).textContent = variant.variant_id || '-';
+                    row.insertCell(3).textContent = variant.reference || '-';
+                    row.insertCell(4).textContent = variant.alternative || '-';
+                    row.insertCell(5).textContent = variant.quality || '-';
+                    row.insertCell(6).textContent = variant.filter || '-';
+                    row.insertCell(7).textContent = variant.info || '-';
+                    row.insertCell(8).textContent = variant.format || '-';
+                });
+            }
+        </script>
+        
+    </div>
+</body>
+</html>
