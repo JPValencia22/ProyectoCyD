@@ -48,6 +48,10 @@ def register():
         except subprocess.CalledProcessError as e:
             return f"Error al ejecutar el script: {e}", 500
 
+@app.route('/login', methods=['GET'])
+def login_page():
+    return render_template('login.html')
+
 @app.route('/upload', methods=['POST'])
 def upload_file():
     """Endpoint to process uploaded VCF files."""
