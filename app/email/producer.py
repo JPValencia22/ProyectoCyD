@@ -1,3 +1,4 @@
+import os
 import random
 import string
 import pika
@@ -37,9 +38,12 @@ def publish_email_message(queue, message_body):
 # Generar contraseña aleatoria
 random_password = generate_random_password()
 
+# Obtener el email del destinatario desde la variable de entorno
+recipient_email = os.getenv('RECIPIENT_EMAIL')
+
 # Datos del mensaje
 email_data = {
-    "recipient": "juanpablovalenciachaves@gmail.com",  # Cambia esto por un destinatario válido de prueba
+    "recipient": recipient_email,
     "subject": "Contraseña de acceso al sistema",
     "body": f"Hola, gracias por preferirnos.\n\nTu contraseña de acceso al sistema es: {random_password}\n\nTus desarrolladores de confianza,\nVanessa y Juan Pablo"
 }

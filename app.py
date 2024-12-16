@@ -13,6 +13,8 @@ import nest_asyncio
 nest_asyncio.apply()
 from flask import render_template
 import logging
+import subprocess
+
 app = Flask(__name__)
 
 # Set up logging
@@ -33,13 +35,18 @@ def upload_page():
 def show_register():
     return render_template('register.html')
 
-@app.route('/register', methods=['POST'])
+@app.route('/register', methods=['GET', 'POST'])
 def register():
-    email = request.form.get('email')   
-    password = request.form.get('password')
-
-    # Aquí puedes agregar la lógica para registrar al usuario, como guardar en la base de datos
-    return jsonify({"message": "User  registered successfully!"}), 201
+    if request.method == 'POST':
+        email = request.form['email']
+        # Guardar el email en una variable de entorno temporal
+        os.environ['RECIPIENT_EMAIL'] = email
+        try:
+            # Ejecutar el script producer.py
+            subprocess.run(['python', 'app/email/producer.py'], check=True)
+            return render_template('login.html')
+        except subprocess.CalledProcessError as e:
+            return f"Error al ejecutar el script: {e}", 500
 
 @app.route('/login', methods=['GET'])
 def login_page():
