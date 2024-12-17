@@ -12,6 +12,9 @@
             const formData = new FormData();
             formData.append('file', fileInput.files[0]);
 
+            // Mostrar el letrero de "Cargando"
+            document.getElementById('loadingMessage').style.display = 'block';
+
             try {
                 const response = await fetch('/upload', {
                     method: 'POST',
@@ -22,11 +25,19 @@
                     throw new Error('Error al subir el archivo');
                 }
 
+                // Ocultar el letrero de "Cargando"
+                document.getElementById('loadingMessage').style.display = 'none';
+
+                // Mostrar mensaje de éxito
                 alert('Archivo subido exitosamente');
-                // Aquí puedes agregar lógica para actualizar la tabla si es necesario
+
+                // Redirigir al endpoint de variants
+                window.location.href = '/variants';
             } catch (error) {
                 console.error('Error:', error);
                 alert('Ocurrió un error al subir el archivo.');
+                // Ocultar el letrero de "Cargando" en caso de error
+                document.getElementById('loadingMessage').style.display = 'none';
             }
         }
     </script>
@@ -35,6 +46,11 @@
     <div class="container">
         <h1 class="mt-5">Cargar Archivo VCF</h1>
         
+        <!-- Mensaje de Cargando -->
+        <div id="loadingMessage" style="display: none; text-align: center; margin-top: 20px;">
+            <h2>Cargando...</h2>
+        </div>
+
         <!-- Botón de carga de archivo -->
         <form id="uploadForm" onsubmit="uploadFile(event)">
             <div class="mb-3">
@@ -43,8 +59,8 @@
             <button type="submit" class="btn btn-primary">Cargar Archivo VCF</button>
         </form>
 
-        <!-- Tabla de variantes vacía -->
-        <div style="max-width: 800px; overflow-x: auto;" class="mt-4">
+        <!-- Eliminar la tabla de variantes -->
+        <!-- <div style="max-width: 800px; overflow-x: auto;" class="mt-4">
             <table id="variantsTable" class="table table-striped mt-3" style="width: 100%;">
                 <thead>
                     <tr>
@@ -65,7 +81,7 @@
                     </tr>
                 </tbody>
             </table>
-        </div>
+        </div> -->
     </div>
 </body>
 </html>

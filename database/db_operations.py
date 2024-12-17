@@ -7,8 +7,8 @@ from models.variant import Variant
 
 
 class VariantDBOperations:
-    CHUNK_SIZE = 25  # Tamaño más pequeño para procesamiento paralelo
-    BATCH_SIZE = 1000  # Tamaño de lote para inserción por lotes
+    CHUNK_SIZE = 1000  # Tamaño más pequeño para procesamiento paralelo
+    
 
     def __init__(self):
         self.client = MongoClient('mongodb://localhost:27017/')
@@ -19,10 +19,7 @@ class VariantDBOperations:
 
     # MÉTODO PARALLELIZADO PARA INSERCIÓN POR LOTES
     def insert_batch(self, variants: List[Variant], collection_name: str = None) -> int:
-        """
-        Insert a batch of variants into MongoDB using parallel execution.
-        Returns the total number of successfully inserted variants.
-        """
+        
         total_inserted = 0
         collection = self.db[collection_name] if collection_name else self.collection
 
