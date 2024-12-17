@@ -25,7 +25,7 @@
         .search-bar input {
             padding: 10px;
             margin: 5px;
-            width: 200px;
+            width: 300px;
             border-radius: 5px;
             border: 1px solid #ddd;
         }
@@ -121,6 +121,24 @@
             text-align: center;
         }
 
+        .sort-button {
+            text-align: center;
+            margin: 20px;
+        }
+
+        .sort-button button {
+            padding: 10px 20px;
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .sort-button button:hover {
+            background-color: #2ecc71;
+        }
+
     </style>
 </head>
 <body>
@@ -134,6 +152,10 @@
         <input type="text" id="info-search" placeholder="Buscar por Info">
         <input type="text" id="format-search" placeholder="Buscar por Format">
         <button onclick="searchVariants()">Buscar</button>
+    </div>
+
+    <div class="sort-button">
+        <button onclick="toggleSort()">Ordenar Asc/Desc</button>
     </div>
 
     <!-- Contenedor de la tabla con desplazamiento horizontal -->
@@ -180,6 +202,37 @@
         const perPage = 100;
         let totalPages = 1;
         let searchParams = {};
+        let ascending = true;
+
+        // Función para alternar el orden de toda la tabla
+        function toggleSort() {
+            const table = document.getElementById("variants-table");
+            const rows = Array.from(table.rows).slice(1); // Excluir encabezado
+
+            rows.sort((a, b) => {
+                for (let i = 0; i < a.cells.length; i++) {
+                    const cellA = a.cells[i].innerText.trim();
+                    const cellB = b.cells[i].innerText.trim();
+                    const isNumber = !isNaN(cellA) && !isNaN(cellB);
+
+                    if (cellA !== cellB) {
+                        if (isNumber) {
+                            return ascending ? cellA - cellB : cellB - cellA;
+                        } else {
+                            return ascending ? cellA.localeCompare(cellB) : cellB.localeCompare(cellA);
+                        }
+                    }
+                }
+                return 0;
+            });
+
+            const tbody = table.tBodies[0];
+            tbody.innerHTML = "";
+            rows.forEach(row => tbody.appendChild(row));
+
+            ascending = !ascending; // Alternar dirección
+        }
+
 
         // Función para cargar los datos de la API
         function loadPage(page) {
@@ -279,6 +332,34 @@
             // Volver a cargar la página 1 con los nuevos parámetros de búsqueda
             currentPage = 1;
             loadPage(currentPage);
+        }
+        // Función para alternar el orden de toda la tabla
+        function toggleSort() {
+            const table = document.getElementById("variants-table");
+            const rows = Array.from(table.rows).slice(1); // Excluir encabezado
+
+            rows.sort((a, b) => {
+                for (let i = 0; i < a.cells.length; i++) {
+                    const cellA = a.cells[i].innerText.trim();
+                    const cellB = b.cells[i].innerText.trim();
+                    const isNumber = !isNaN(cellA) && !isNaN(cellB);
+
+                    if (cellA !== cellB) {
+                        if (isNumber) {
+                            return ascending ? cellA - cellB : cellB - cellA;
+                        } else {
+                            return ascending ? cellA.localeCompare(cellB) : cellB.localeCompare(cellA);
+                        }
+                    }
+                }
+                return 0;
+            });
+
+            const tbody = table.tBodies[0];
+            tbody.innerHTML = "";
+            rows.forEach(row => tbody.appendChild(row));
+
+            ascending = !ascending; // Alternar dirección
         }
 
         // Función para ir a la página seleccionada
