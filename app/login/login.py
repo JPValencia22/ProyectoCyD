@@ -9,13 +9,13 @@ client = AsyncIOMotorClient(host=MONGODB_CONFIG_LOGIN['host'], port=MONGODB_CONF
 db = client[MONGODB_CONFIG_LOGIN['database']]
 collection = db[MONGODB_CONFIG_LOGIN['collection']]
 
-async def search_user():
+def search_user():
     email = os.getenv("RECIPIENT_EMAIL")
     password = os.getenv("RECIPIENT_PASSWORD")
     
     print(f"Buscando usuario con email: {email} y contraseña: {password}")
     
-    user = await collection.find_one({"email": email, "security_key": password})
+    user = collection.find_one({"email": email, "security_key": password})
     if user:
         print("Usuario encontrado")
         return "Usuario encontrado"

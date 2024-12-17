@@ -1,20 +1,20 @@
 import asyncio
-from concurrent.futures import ThreadPoolExecutor, as_completed
-import shutil
-from bson import ObjectId
-from flask import Flask, request, jsonify
+import logging
 import os
+import shutil
+import subprocess
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
+import nest_asyncio
+from bson import ObjectId
+from flask import Flask, jsonify, render_template, request
+from motor.motor_asyncio import AsyncIOMotorClient
+from pymongo import MongoClient
+
 from app.login.login import search_user
 from config.db_config import MONGODB_CONFIG
-from procesarData import process_vcf_files  # Import your processing function
 from database.db_operations import VariantDBOperations
-from pymongo import MongoClient
-from motor.motor_asyncio import AsyncIOMotorClient
-import asyncio
-import nest_asyncio
-from flask import render_template
-import logging
-import subprocess
+from procesarData import process_vcf_files  # Import your processing function
 
 nest_asyncio.apply()
 
@@ -31,7 +31,6 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 @app.route('/')
 def home():
     return render_template('home.html')
-
 
 @app.route('/upload', methods=['GET'])
 def upload_page():
@@ -68,11 +67,11 @@ def login():
         os.environ['RECIPIENT_PASSWORD'] = password
         
         # Ejecutar la función asíncrona search_user
-        user = asyncio.run(search_user())
+        user = search_user()
         
         try:
             if user == "Usuario encontrado":
-                return render_template('redirect.html')
+                return render_template('variants_table.html')
             else:
                 return render_template('login.html', error=True)
         except Exception as e:
@@ -138,51 +137,30 @@ def all_variants():
         'page': page,
         'per_page': per_page
     })
- 
 
+@app.route('/search_variants', methods=['GET'])
+def search_variants():
+    # Obtener parámetros de búsqueda y paginación desde la URL
+    query_params = request.args.to_dict()
+    page = int(query_params.pop('page', 1))
+    per_page = int(query_params.pop('per_page', 100))
 
-def search_variants(self, query_params, page, per_page):
-        skip = (page - 1) * per_page
-        search_filters = {}
+    # Consultar la base de datos de manera paralela
+    future = executor.submit(db_operations.search_variants, query_params, page, per_page)
+    variants, total = future.result()
 
-        # Construir filtros dinámicamente
-        if 'Chrom' in query_params:
-            search_filters['chromosome'] = query_params['Chrom']
-        if 'Filter' in query_params:
-            search_filters['filter'] = query_params['Filter']
-        if 'Info' in query_params:
-            search_filters['$text'] = {'$search': query_params['Info']}
-        if 'Format' in query_params:
-            search_filters['format'] = query_params['Format']
-        
-        # Búsqueda paralela con ThreadPoolExecutor
-        with ThreadPoolExecutor() as executor:
-            future = executor.submit(
-                self.collection.find, search_filters, {'_id': 0}
-            )
-            cursor = future.result().skip(skip).limit(per_page)
-            
-        variants = list(cursor)
-        
-        result = [
-            {
-                'Chrom': variant.get('chromosome'),
-                'Pos': variant.get('position'),
-                'Id': variant.get('id'),
-                'Ref': variant.get('reference'),
-                'Alt': variant.get('alternative'),
-                'Qual': variant.get('quality'),
-                'Filter': variant.get('filter'),
-                'Info': variant.get('info'),
-                'Format': variant.get('format'),
-                'Outputs': variant.get('samples', {})
-            }
-            for variant in variants
-        ]
+    total_pages = (total + per_page - 1) // per_page 
 
-        total = self.collection.count_documents(search_filters)
-        return result, total
+    # Devolver resultados como JSON para carga dinámica
+    return jsonify({
+        'variants': variants,
+        'total': total,
+        'total_pages': total_pages,
+        'page': page,
+        'per_page': per_page
+    })
 
 
 if __name__ == '__main__':
     app.run(debug=True)
+    
